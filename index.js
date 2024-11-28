@@ -13,22 +13,26 @@ app.use(
   })
 );
 
-const adminRoutes = require("./routes/adminRoutes");
-const shopRoutes = require("./routes/shopRoutes");
 const authRoutes = require("./routes/authRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const cartRoutes = require("./routes/cartRoutes");
+
 const User = require("./models/User");
+const Product = require("./models/Product");
+
+const authenticate = require("./middlewares/authenticate");
+const verifyAdmin = require("./middlewares/verifyAdmin");
 
 app.use("/auth", authRoutes);
-app.use("/admin", adminRoutes);
-app.use(shopRoutes);
+app.use("/cart", cartRoutes);
+app.use("/admin", authenticate, verifyAdmin, adminRoutes);
 
-// Initialize MongoDB Connection
 (async () => {
   try {
     await mongoConnect();
 
     // Example: Use `getDB` to query the database
-    const db = getDB();
+    const db = await getDB();
 
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);

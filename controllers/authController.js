@@ -79,7 +79,11 @@ exports.postSignup = async (req, res, next) => {
     console.log("ereee");
 
     // Create the new user
-    const user = new User(req.body.username, req.body.mail, hashed);
+    const user = new User({
+      username: req.body.username,
+      mail: req.body.mail,
+      password: hashed,
+    });
     const savedUser = await user.save();
     // Exclude sensitive data from user object
 

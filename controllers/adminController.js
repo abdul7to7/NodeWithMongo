@@ -1,81 +1,31 @@
-const Product = require("../models/Product"); // Assuming Product is a Mongoose model
+const Product = require("../models/Product");
+const Cart = require("../models/Cart");
 
-// Add Product to Database (POST /admin/add-product)
-exports.postAddProduct = (req, res, next) => {
-  const { title, imageUrl, price, description } = req.body;
-
-  const product = new Product({
-    title,
-    imageUrl,
-    price,
-    description,
-  });
-
-  product
-    .save()
-    .then(() => {
-      res.status(201).json({ message: "Product added successfully!" });
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ message: "Failed to add product." });
+exports.postProduct = async (req, res, next) => {
+  try {
+    console.log(req.user);
+    const product = new Product({ ...req.body, userId: req.user._id });
+    const savedProduct = await product.save();
+    return res.status(201).json({ success: true, product: savedProduct });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: `something went wrong : ${err.message}`,
     });
+  }
 };
 
-// Edit and Update Product (PUT /admin/edit-product/:productId)
-exports.postEditProduct = (req, res, next) => {
-  const prodId = req.params.productId;
-  const { title, price, imageUrl, description } = req.body;
-
-  Product.findByIdAndUpdate(
-    prodId,
-    {
-      title,
-      price,
-      imageUrl,
-      description,
-    },
-    { new: true } // Returns the updated product
-  )
-    .then((updatedProduct) => {
-      if (!updatedProduct) {
-        return res.status(404).json({ message: "Product not found!" });
-      }
-      res
-        .status(200)
-        .json({ message: "Product updated successfully!", updatedProduct });
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ message: "Failed to update product." });
+exports.deleteProduct = async (req, res, next) => {
+  try {
+    const _id = req.params._id;
+    await Product.deleteById(_id);
+    return res
+      .status(200)
+      .json({ success: true, message: "deleted successfully" });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      message: `something went wrong : ${err.message}`,
     });
-};
-
-// Get All Products (GET /admin/products)
-exports.getProducts = (req, res, next) => {
-  Product.find()
-    .then((products) => {
-      res.status(200).json({ products });
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ message: "Failed to fetch products." });
-    });
-};
-
-// Delete Product (DELETE /admin/delete-product/:productId)
-exports.postDeleteProduct = (req, res, next) => {
-  const prodId = req.params.productId;
-
-  Product.findByIdAndDelete(prodId)
-    .then((result) => {
-      if (!result) {
-        return res.status(404).json({ message: "Product not found!" });
-      }
-      res.status(200).json({ message: "Product deleted successfully!" });
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ message: "Failed to delete product." });
-    });
+  }
 };

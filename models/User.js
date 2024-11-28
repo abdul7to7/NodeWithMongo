@@ -2,10 +2,11 @@ const mongodb = require("mongodb");
 const { getDB } = require("../utils/db");
 
 class User {
-  constructor(username, mail, password) {
-    this.username = username;
-    this.mail = mail;
-    this.password = password;
+  constructor(data) {
+    this.username = data.username;
+    this.mail = data.mail;
+    this.password = data.password;
+    this.isAdmin = data.isAdmin ? data.isAdmin : false;
   }
 
   save() {
