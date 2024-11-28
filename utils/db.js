@@ -1,5 +1,4 @@
-const mongodb = require("mongodb");
-const MongoClient = mongodb.MongoClient;
+const { MongoClient } = require("mongodb");
 
 let _db; // Variable to store the database instance
 
@@ -10,12 +9,13 @@ const mongoConnect = async () => {
     return _db; // Return existing database instance if already connected
   }
   try {
-    const client = await MongoClient.connect(process.env.URI, {
+    const client = new MongoClient(process.env.URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
+    await client.connect(); // Connect to MongoDB
     console.log("Connected to MongoDB!");
-    _db = client.db(); // Store the database instance
+    _db = client.db(); // Store the database instance (default database from URI)
     return _db;
   } catch (err) {
     console.error("Failed to connect to MongoDB:", err);
