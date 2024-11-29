@@ -5,6 +5,7 @@ class Product {
   static collectionName = "products";
 
   constructor(data) {
+    this._id = data._id || null;
     this.name = data.name;
     this.description = data.description;
     this.price = data.price;
@@ -37,12 +38,16 @@ class Product {
   }
 
   static async findAll() {
-    const db = await getDB();
+    const db = await getDB(); // Get the database connection
 
+    // Fetch all products from the collection
     const products = await db
       .collection(Product.collectionName)
       .find()
       .toArray();
+
+    // Map the raw product documents to instances of the Product class
+
     return products.map((product) => new Product(product));
   }
 

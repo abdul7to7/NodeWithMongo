@@ -1,13 +1,15 @@
 const {
   getCart,
   addProductToCart,
-  removeProductToCart,
+  getDeleteProductFromCart,
+  getRemoveProductToCart,
 } = require("../controllers/cartController");
 
 const router = require("express").Router();
 
-router.get("/get-cart/:cartId", getCart);
+router.get("/get-cart", getCart);
 router.get("/add-to-cart/:productId", addProductToCart);
-router.get("/remove-to-cart/:productId", removeProductToCart);
+router.get("/remove-product-to-cart/:productId", getRemoveProductToCart);
+router.get("/delete-product-from-cart/:productId", getDeleteProductFromCart);
 
 module.exports = router;

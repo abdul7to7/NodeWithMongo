@@ -29,3 +29,9 @@ exports.deleteProduct = async (req, res, next) => {
     });
   }
 };
+
+exports.getAllProducts = async (req, res, next) => {
+  const products = await Product.findAll();
+  console.log(products);
+  return res.json({ success: true, products });
+};

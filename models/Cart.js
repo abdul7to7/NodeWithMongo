@@ -72,6 +72,13 @@ class Cart {
     }
   }
 
+  async deleteItem(productId) {
+    this.items = this.items.filter((item) => {
+      return item.productId.toString() !== productId.toString();
+    });
+    await this.save();
+  }
+
   async getItems(cartId) {
     const db = await getDB();
     const items = await db

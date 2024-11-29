@@ -42,7 +42,7 @@ exports.addProductToCart = async (req, res, next) => {
       .json({ success: false, message: `Something went wrong:${e.message}` });
   }
 };
-exports.removeProductToCart = async (req, res, next) => {
+exports.getRemoveProductToCart = async (req, res, next) => {
   try {
     const cart = await Cart.findByUserId(req.user._id);
     if (!cart) {
@@ -56,5 +56,22 @@ exports.removeProductToCart = async (req, res, next) => {
     return res
       .status(500)
       .json({ success: false, message: `Something went wrong:${e.message}` });
+  }
+};
+
+exports.getDeleteProductFromCart = async (req, res, next) => {
+  try {
+    const cart = await Cart.findByUserId(req.user._id);
+    if (!cart) {
+      return res
+        .status(500)
+        .json({ success: false, message: "something went wrong" });
+    }
+    await cart.deleteItem(req.params.productId);
+    return res.json({ success: true });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({ success: false, message: `something went wrong:${e}` });
   }
 };

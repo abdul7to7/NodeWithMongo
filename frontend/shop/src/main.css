@@ -2,3 +2,11 @@
   margin: 0;
   padding: 0;
 }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+  height: 100vh;
+  width: 100%;
+}
