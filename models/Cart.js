@@ -5,7 +5,8 @@ class Cart {
   static collectionName = "carts";
 
   constructor(data) {
-    this.userId = req.user._id; // Reference to the user
+    this._id = data._id || null;
+    this.userId = data.userId; // Reference to the user
     this.items = data.items || []; // Array of { productId, quantity }
     this.createdAt = data.createdAt || new Date();
   }
@@ -25,7 +26,7 @@ class Cart {
         .updateOne({ _id: objectId }, { $set: this });
     } else {
       // Insert new cart
-      const result = await collection.insertOne(this);
+      const result = await db.collection(Cart.collectionName).insertOne(this);
       this._id = result.insertedId;
     }
     return this;
@@ -35,9 +36,7 @@ class Cart {
     const productObjectId = new mongodb.ObjectId(productId);
 
     // Check if the product already exists in the cart
-    const existingItem = this.items.find((item) =>
-      item.productId.equals(productObjectId)
-    );
+    const existingItem = this.items.find((item) => item.productId == productId);
 
     if (existingItem) {
       // Update the quantity
@@ -55,8 +54,8 @@ class Cart {
     const productObjectId = new mongodb.ObjectId(productId);
 
     // Find the product in the cart
-    const itemIndex = this.items.findIndex((item) =>
-      item.productId.equals(productObjectId)
+    const itemIndex = this.items.findIndex(
+      (item) => (item.productId = productId)
     );
 
     if (itemIndex !== -1) {
@@ -73,39 +72,35 @@ class Cart {
     }
   }
 
-  async getItems() {
+  async getItems(cartId) {
     const db = await getDB();
-    const items = await db.collection(Cart.collectionName).findAll();
+    const items = await db
+      .collection(Cart.collectionName)
+      .findAll({ _id: cartId });
     return items;
   }
 
   static async findByUserId(userId) {
     const db = await getDB();
-
-    const objectId = new mongodb.ObjectId(userId);
     const cart = await db
       .collection(Cart.collectionName)
-      .findOne({ userId: objectId });
+      .findOne({ userId: userId });
 
     if (!cart) return null;
 
-    // Populate product details
-    cart.items = await Promise.all(
-      cart.items.map(async (item) => {
-        const product = await db.collection("products").findOne({
-          _id: item.productId,
-        });
-        return { ...item, product };
-      })
-    );
-
-    return new Cart(cart);
+    return new Cart({ ...cart });
   }
 
   static async findAll() {
     const db = await getDB();
     const carts = await db.collection(Cart.collectionName).find().toArray();
     return carts.map((cart) => new Cart(cart));
+  }
+  static async getCartById(cartId) {
+    const db = await getDB();
+
+    const objectId = new mongodb.ObjectId(cartId);
+    return db.collection(Cart.collectionName).findOne({ _id: objectId });
   }
 }
 

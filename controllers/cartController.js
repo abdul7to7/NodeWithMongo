@@ -1,3 +1,60 @@
-exports.getCart = async (req, res, next) => {};
-exports.addProductToCart = async (req, res, next) => {};
-exports.removeProductToCart = async (req, res, next) => {};
+const Cart = require("../models/Cart");
+const Product = require("../models/Product");
+const { getDB } = require("../utils/db");
+
+exports.getCart = async (req, res, next) => {
+  try {
+    const cart = await Cart.findByUserId(req.user._id);
+
+    // Populate product details
+
+    cart.items = await Promise.all(
+      cart.items.map(async (item) => {
+        // const product = await db.collection("products").findOne({
+        //   _id: item.productId,
+        // });
+        const product = await Product.findById(item.productId);
+
+        return { ...item, product };
+      })
+    );
+
+    return res.status(200).json({ success: true, cart: cart });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({ success: false, message: `Something went wrong:${e.message}` });
+  }
+};
+exports.addProductToCart = async (req, res, next) => {
+  try {
+    let cart = await Cart.findByUserId(req.user._id);
+    if (!cart) {
+      cart = new Cart({ userId: req.user._id });
+      await cart.save();
+    }
+
+    await cart.addItem(req.params.productId);
+    return res.json({ success: true });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({ success: false, message: `Something went wrong:${e.message}` });
+  }
+};
+exports.removeProductToCart = async (req, res, next) => {
+  try {
+    const cart = await Cart.findByUserId(req.user._id);
+    if (!cart) {
+      return res
+        .status(500)
+        .json({ success: false, message: "something went wrong" });
+    }
+    await cart.removeItem(req.params.productId);
+    return res.json({ success: true });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({ success: false, message: `Something went wrong:${e.message}` });
+  }
+};

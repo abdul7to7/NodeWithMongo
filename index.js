@@ -24,7 +24,7 @@ const authenticate = require("./middlewares/authenticate");
 const verifyAdmin = require("./middlewares/verifyAdmin");
 
 app.use("/auth", authRoutes);
-app.use("/cart", cartRoutes);
+app.use("/cart", authenticate, cartRoutes);
 app.use("/admin", authenticate, verifyAdmin, adminRoutes);
 
 (async () => {
