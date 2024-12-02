@@ -1,82 +1,44 @@
-const mongodb = require("mongodb");
-const { getDB } = require("../utils/db");
+const mongoose = require("mongoose");
 
-class Product {
-  static collectionName = "products";
+// Define the Product schema
+const productSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    description: { type: String },
+    price: { type: Number, required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { timestamps: true } // Adds `createdAt` and `updatedAt` fields
+);
 
-  constructor(data) {
-    this._id = data._id || null;
-    this.name = data.name;
-    this.description = data.description;
-    this.price = data.price;
-    this.createdAt = data.createdAt || new Date();
-    this.userId = data.userId ? data.userId : null;
+// Static methods for the Product model
+productSchema.statics.findAll = async function () {
+  return this.find();
+};
+
+productSchema.statics.findById = async function (id) {
+  return this.findOne({ _id: id });
+};
+
+productSchema.statics.deleteById = async function (id) {
+  const result = await this.deleteOne({ _id: id });
+  if (result.deletedCount === 0) {
+    throw new Error(`No product found with ID: ${id}`);
   }
+  return { success: true, message: "Product deleted successfully" };
+};
 
-  static async getCollection() {
-    const db = await getDB();
-    return db.collection(Product.collectionName);
-  }
+// Instance methods for the Product model
+productSchema.methods.saveProduct = async function () {
+  return this.save();
+};
 
-  async save() {
-    const db = await getDB();
-
-    if (this._id) {
-      // Update existing product
-      const objectId = new mongodb.ObjectId(this._id);
-      await db
-        .collection(Product.collectionName)
-        .updateOne({ _id: objectId }, { $set: this });
-    } else {
-      // Insert new product
-      const result = await db
-        .collection(Product.collectionName)
-        .insertOne(this);
-      this._id = result.insertedId;
-    }
-    return this;
-  }
-
-  static async findAll() {
-    const db = await getDB(); // Get the database connection
-
-    // Fetch all products from the collection
-    const products = await db
-      .collection(Product.collectionName)
-      .find()
-      .toArray();
-
-    // Map the raw product documents to instances of the Product class
-
-    return products.map((product) => new Product(product));
-  }
-
-  static async findById(id) {
-    const db = await getDB();
-    const objectId = new mongodb.ObjectId(id);
-    const product = await db
-      .collection(Product.collectionName)
-      .findOne({ _id: objectId });
-    return product ? new Product(product) : null;
-  }
-
-  static async deleteById(productId) {
-    try {
-      const db = await getDB();
-      const objectId = new mongodb.ObjectId(productId); // Convert to ObjectId
-      const result = await db
-        .collection(Product.collectionName)
-        .deleteOne({ _id: objectId });
-
-      if (result.deletedCount === 0) {
-        throw new Error(`No product found with ID: ${productId}`);
-      }
-
-      return { success: true, message: "Product deleted successfully" };
-    } catch (err) {
-      return { success: false, message: err.message };
-    }
-  }
-}
+// Create the Product model
+const Product = mongoose.model("Product", productSchema);
 
 module.exports = Product;

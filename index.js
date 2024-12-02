@@ -1,6 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-const { mongoConnect, getDB } = require("./utils/db");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const cors = require("cors");
@@ -23,6 +22,7 @@ const Product = require("./models/Product");
 
 const authenticate = require("./middlewares/authenticate");
 const verifyAdmin = require("./middlewares/verifyAdmin");
+const connectToDb = require("./utils/db");
 
 app.use("/auth", authRoutes);
 app.use("/cart", authenticate, cartRoutes);
@@ -30,16 +30,16 @@ app.use("/product", authenticate, productRoutes);
 app.use("/admin", authenticate, verifyAdmin, adminRoutes);
 
 (async () => {
+  const PORT = process.env.PORT || 3000;
+  const MONGO_URI = process.env.URI; // Ensure this is set in your .env file
+
   try {
-    await mongoConnect();
-
-    // Example: Use `getDB` to query the database
-    const db = await getDB();
-
+    await connectToDb(MONGO_URI); // Connect to MongoDB
     app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
+      console.log(`Server running on http://localhost:${PORT}`);
     });
-  } catch (err) {
-    console.error("Failed to start server:", err);
+  } catch (error) {
+    console.error("Failed to start the application:", error.message);
+    process.exit(1);
   }
 })();

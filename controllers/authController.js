@@ -1,7 +1,6 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const authGenerate = require("../middlewares/authGenerate");
-const { getDB } = require("../utils/db");
 
 exports.postLogin = async (req, res, next) => {
   try {
@@ -15,9 +14,8 @@ exports.postLogin = async (req, res, next) => {
     }
     console.log(req.body);
     console.log(hashed);
-    // Check if user exists in the database
-    const db = getDB();
-    const user = await db.collection("users").findOne({ mail: req.body.mail });
+
+    const user = await User.findByMail(req.body.mail);
     if (!user) {
       return res
         .status(403)
@@ -55,12 +53,7 @@ exports.postLogin = async (req, res, next) => {
 };
 exports.postSignup = async (req, res, next) => {
   try {
-    // Check if user already exists
-    const db = getDB();
-
-    const userExisted = await db
-      .collection("users")
-      .findOne({ mail: req.body.mail }); // Adjust field name if needed
+    const userExisted = await User.findByMail(req.body.mail);
     if (userExisted) {
       return res
         .status(409)

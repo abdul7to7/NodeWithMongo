@@ -1,10 +1,18 @@
 const Cart = require("../models/Cart");
 const Product = require("../models/Product");
-const { getDB } = require("../utils/db");
 
 exports.getCart = async (req, res, next) => {
   try {
-    const cart = await Cart.findByUserId(req.user._id);
+    let cart = await Cart.findByUserId(req.user._id);
+    if (!cart) {
+      cart = new Cart({
+        userId: req.user._id,
+        items: [],
+      });
+
+      // Save the new cart
+      await cart.save();
+    }
 
     // Populate product details
 

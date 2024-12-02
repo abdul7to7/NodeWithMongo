@@ -1,23 +1,31 @@
-const mongodb = require("mongodb");
-const { getDB } = require("../utils/db");
+const mongoose = require("mongoose");
 
-class User {
-  constructor(data) {
-    this.username = data.username;
-    this.mail = data.mail;
-    this.password = data.password;
-    this.isAdmin = data.isAdmin ? data.isAdmin : false;
-  }
+// Define the User schema
+const userSchema = new mongoose.Schema(
+  {
+    username: { type: String, required: true },
+    mail: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    isAdmin: { type: Boolean, default: false },
+  },
+  { timestamps: true } // Automatically adds `createdAt` and `updatedAt` fields
+);
 
-  save() {
-    const db = getDB();
-    return db.collection("users").insertOne(this);
-  }
+// Instance methods
+userSchema.methods.saveUser = function () {
+  return this.save();
+};
 
-  static findUserByID(id) {
-    const db = getDB();
-    return db.collection("users").findOne({ _id: new mongodb.ObjectId(id) });
-  }
-}
+// Static methods
+userSchema.statics.findUserByID = function (id) {
+  return this.findById(id);
+};
+
+userSchema.statics.findByMail = function (mail) {
+  return this.findOne({ mail });
+};
+
+// Create the User model
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;
