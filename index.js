@@ -16,6 +16,7 @@ const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const productRoutes = require("./routes/productRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 const User = require("./models/User");
 const Product = require("./models/Product");
@@ -27,6 +28,7 @@ const connectToDb = require("./utils/db");
 app.use("/auth", authRoutes);
 app.use("/cart", authenticate, cartRoutes);
 app.use("/product", authenticate, productRoutes);
+app.use("/order", authenticate, orderRoutes);
 app.use("/admin", authenticate, verifyAdmin, adminRoutes);
 
 (async () => {
